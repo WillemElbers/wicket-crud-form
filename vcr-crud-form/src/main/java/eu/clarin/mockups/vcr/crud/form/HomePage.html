@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org/">
+    <head><title></title></head>
+    <body>
+        <div>
+            <span wicket:id="message">Message goes here</span>
+            
+            <br /><br />
+            <hr />
+            <h3>Form based</h3>            
+            
+            <form wicket:id="form1">
+                <div>
+                    <span wicket:id="lbl_name">Name:</span>
+                    <input wicket:id="input_name" type="text"/>
+                </div>
+
+                <form wicket:id="form2">
+                    <div>
+                        <div>
+                            <span wicket:id="lbl_reference">Add </span>
+                            <input wicket:id="input_reference" type="text"/>
+                        </div>
+                        <button wicket:id="submit2"></button>
+                    </div>
+                </form>
+
+                <div>
+                    <button wicket:id="submit1"></button>    
+                    <a wicket:id="cancel1">Cancel</a>    
+                </div>
+            </form>
+            
+            <br /><br />
+            <hr />
+            <h3>Ajax only</h3>
+            
+            <div wicket:id="name">[NAME]</div>
+            <div wicket:id="authors">[AUTHORS]</div>
+            <div wicket:id="references">[REFERENCES]</div>
+        </div>
+    </body>
+</html>

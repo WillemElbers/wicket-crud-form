@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+      PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+      "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+    
+    <display-name>Wicket VCR Crud Form Mockup</display-name>
+    
+    <filter>
+        <filter-name>VcrCrudFormApplication</filter-name>
+        <filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
+        <init-param>
+          <param-name>applicationClassName</param-name>
+          <param-value>eu.clarin.mockups.vcr.crud.form.CrudFormApplication</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>VcrCrudFormApplication</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>
