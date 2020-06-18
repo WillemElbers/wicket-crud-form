@@ -1,4 +1,4 @@
-package eu.clarin.mockups.vcr.crud.form.editors;
+package eu.clarin.mockups.vcr.crud.forms.editors;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.attributes.AjaxCallListener;

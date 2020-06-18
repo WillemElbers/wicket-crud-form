@@ -1,5 +1,4 @@
-
-package eu.clarin.mockups.vcr.crud.form.pojo.reference;
+package eu.clarin.mockups.vcr.crud.form.pojo;
 
 import java.io.Serializable;
 
@@ -7,23 +6,30 @@ import java.io.Serializable;
  *
  * @author wilelb
  */
-public abstract class AbstractReference implements Reference, Serializable {
+public class Reference implements Serializable {
+    
     protected String value;
     protected String url;
     private String check;
     protected String type;
+    private String title;
+    private String description;
     
-    public AbstractReference() {}
+    public Reference() {}
     
-    public AbstractReference(String value) {
+    public Reference(String value) {
         this.value = value;
+    }
+    
+    @Override
+    public String toString() {
+        return value;
     }
     
     public void setType(String type) {
         this.type = type;
     }
     
-    @Override
     public String getType() {
         return type;
     }
@@ -32,7 +38,6 @@ public abstract class AbstractReference implements Reference, Serializable {
         this.url = url;
     }
     
-    @Override
     public String getUrl() {
         return url;
     }
@@ -40,7 +45,6 @@ public abstract class AbstractReference implements Reference, Serializable {
     /**
      * @return the value
      */
-    @Override
     public String getValue() {
         return value;
     }
@@ -50,11 +54,6 @@ public abstract class AbstractReference implements Reference, Serializable {
      */
     public void setValue(String value) {
         this.value = value;
-    }
-    
-    @Override
-    public String toString() {
-        return value;
     }
 
     /**
@@ -69,5 +68,33 @@ public abstract class AbstractReference implements Reference, Serializable {
      */
     public void setCheck(String check) {
         this.check = check;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

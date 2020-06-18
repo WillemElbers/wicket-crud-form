@@ -1,14 +1,15 @@
-package eu.clarin.mockups.vcr.crud.form.editors;
+package eu.clarin.mockups.vcr.crud.forms.editors;
 
-import eu.clarin.mockups.vcr.crud.form.editors.references.ReferencePanel;
-import eu.clarin.mockups.vcr.crud.form.pojo.reference.PidReference;
-import eu.clarin.mockups.vcr.crud.form.pojo.reference.Reference;
-import eu.clarin.mockups.vcr.crud.form.pojo.reference.UnkownReference;
-import eu.clarin.mockups.vcr.crud.form.pojo.reference.UrlReference;
+import eu.clarin.mockups.vcr.crud.form.pojo.Reference;
+import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextField;
+import eu.clarin.mockups.vcr.crud.forms.fields.Field;
+import eu.clarin.mockups.vcr.crud.forms.fields.FieldComposition;
+import eu.clarin.mockups.vcr.crud.forms.fields.InputValidator;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import java.util.List;
@@ -31,6 +32,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -58,6 +60,9 @@ public class ReferencesEditor extends Panel implements FieldComposition {
     private final List<ReferenceJob> references = new CopyOnWriteArrayList<>();
     private IModel<String> data = new Model<>();
     
+    final Label lblNoReferences;
+    final ListView listview;
+    
     private transient Worker worker = new Worker();
     
     public class Validator implements InputValidator, Serializable {
@@ -80,8 +85,7 @@ public class ReferencesEditor extends Panel implements FieldComposition {
                 return message;
             }
     }
-    final Label lblNoReferences;
-    final ListView listview;
+    
     public ReferencesEditor(String id) {
         super(id);
         setOutputMarkupId(true);
@@ -92,28 +96,43 @@ public class ReferencesEditor extends Panel implements FieldComposition {
         
         lblNoReferences = new Label("lbl_no_references", "No references found.");
         
-        ajaxWrapper.add(lblNoReferences);
+        final List<Component> comps = new ArrayList<>();
         listview = new ListView("listview", references) {
             @Override
             protected void populateItem(ListItem item) {
                 ReferenceJob ref = (ReferenceJob)item.getModel().getObject();
-                item.add(new ReferencePanel("pnl_reference", ref));
+                Component c = new ReferencePanel("pnl_reference", ref);
+                c.setOutputMarkupId(true);
+                comps.add(c);
+                item.add(c);
             }
         };
 
         ajaxWrapper.add(new AbstractAjaxTimerBehavior(Duration.seconds(1)) {
             @Override
             protected void onTimer(AjaxRequestTarget target) {
-                target.add(ajaxWrapper);
+                if(target != null) {
+                    //target.add(ajaxWrapper);
+                    for(Component c : comps) {
+                        target.add(c);
+                    }
+                }
             }
         });
         ajaxWrapper.add(listview);
+       
         lblNoReferences.setVisible(references.isEmpty());
         listview.setVisible(!references.isEmpty());
+        
+        ajaxWrapper.add(lblNoReferences);
+        ajaxWrapper.add(listview);
         add(ajaxWrapper);
         
-        Field f1 = new Field("reference", "Reference:", "Add URL or PID", data, this);        
-        f1.setTriggerComplete(true);
+        //add(lblNoReferences);
+        //add(listview);
+        
+        Field f1 = new VcrTextField("reference", "Reference:", "Add URL or PID", data, this);        
+        f1.setCompleteSubmitOnUpdate(true);
         f1.addValidator(new Validator());
         add(f1);
     }
@@ -131,16 +150,16 @@ public class ReferencesEditor extends Panel implements FieldComposition {
         String value = data.getObject();
         if(value != null && !value.isEmpty()) {
             if(handleUrl(value)) {
-                references.add(new ReferenceJob(new UrlReference(value)));
+                references.add(new ReferenceJob(new Reference(value)));
                 data.setObject("");
             } else if(handlePid(value)) {
-                references.add(new ReferenceJob(new PidReference(value)));
+                references.add(new ReferenceJob(new Reference(value)));
                 data.setObject("");
             } else {
-                references.add(new ReferenceJob(new UnkownReference(value, "Not a valid URL or PID.")));
+//                references.add(new ReferenceJob(new UnkownReference(value, "Not a valid URL or PID.")));
             }
 
-            if(!worker.isRunning()) {
+            if(worker == null || !worker.isRunning()) {
                 worker = new Worker();
                 worker.start();
                 new Thread(worker).start();
@@ -173,6 +192,18 @@ public class ReferencesEditor extends Panel implements FieldComposition {
     
     public enum State {
         INITIALIZED, ANALYZING, DONE, FAILED
+    }
+    
+    public List<Reference> getData() {
+        List<Reference> result = new ArrayList<>();
+        for(ReferenceJob job : references) {
+            result.add(job.getReference());
+        }
+        return result;
+    }
+    
+    public void reset() {
+        references.clear();
     }
     
     public class ReferenceJob implements Serializable {
@@ -221,7 +252,7 @@ public class ReferencesEditor extends Panel implements FieldComposition {
         public void run() {
             while(running) {
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
                 } catch(InterruptedException ex) {
                     logger.error("", ex);
                 }
@@ -290,14 +321,14 @@ public class ReferencesEditor extends Panel implements FieldComposition {
                                 String type = job.getReference().getType();
                                 if(type.equalsIgnoreCase("application/x-cmdi+xml")) {
                                     try {
-                                        parseCmdi(body);
+                                        parseCmdi(body, job);
                                     } catch(IOException | ParserConfigurationException | XPathExpressionException | SAXException ex) {
                                         logger.error("Failed to parse CMDI", ex);
                                     }
                                 } else if(job.getReference().getType().equalsIgnoreCase("text/xml") && 
                                     body.contains("xmlns=\"http://www.clarin.eu/cmd/\"")) {
                                     try {
-                                        parseCmdi(body);
+                                        parseCmdi(body, job);
                                     } catch(IOException | ParserConfigurationException | XPathExpressionException | SAXException ex) {
                                         logger.error("Failed to parse CMDI", ex);
                                     }
@@ -311,38 +342,66 @@ public class ReferencesEditor extends Panel implements FieldComposition {
 
                 };
                 String responseBody = httpclient.execute(httpget, responseHandler);
-                //System.out.println("----------------------------------------");
-                //System.out.println(responseBody);
             } finally {
                 httpclient.close();
             }
         
             try {
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
                 } catch(InterruptedException ex) {
                     logger.error("", ex);
                 }
         }
     }
 
-    private void parseCmdi(final String xml) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
+    private void parseCmdi(final String xml, final ReferenceJob job) throws XPathExpressionException, ParserConfigurationException, SAXException, IOException {
         logger.info("Parsing CMDI");
-        /*
-        String xml = "<urn:ResponseStatus version=\"1.0\" xmlns:urn=\"urn:camera-org\">\r\n" + //
-        "\r\n" + //
-        "<urn:requestURL>/CAMERA/Streaming/status</urn:requestURL>\r\n" + //
-        "<urn:statusCode>4</urn:statusCode>\r\n" + //
-        "<urn:statusString>Invalid Operation</urn:statusString>\r\n" + //
-        "<urn:id>0</urn:id>\r\n" + //
-        "\r\n" + //
-        "</urn:ResponseStatus>";
-        */
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(new java.io.ByteArrayInputStream(xml.getBytes()));
-        XPath xpath = XPathFactory.newInstance().newXPath();
+
+        String profile = getValueForXPath(doc, "//default:CMD/default:Header/default:MdProfile/text()");
+        logger.info("CMDI profile = " + profile);
         
+        String name = getValueForXPath(doc, "//default:CMD/default:Components/default:lat-session/default:Name/text()");
+        String description = getValueForXPath(doc, "//default:CMD/default:Components/default:lat-session/default:descriptions/default:Description[lang('eng')]/text()");
+        logger.info("Name = " + name + ", description = " + description);
+        
+        if(name != null) {
+            job.getReference().setTitle(name);
+        }
+        if(description != null) {
+            job.getReference().setDescription(description);
+        }
+    }
+    
+    /**
+     * Return the first value of the xpath query result, or null if the result is
+     * empty
+     * 
+     * @param doc
+     * @param xpathQuery
+     * @return 
+     */
+    private String getValueForXPath(Document doc, String xpathQuery) {
+        List<String> result = getValuesForXPath(doc, xpathQuery);
+        if(result.isEmpty()) {
+            return null;
+        }
+        return result.get(0);
+    }
+    
+    /**
+     * Return all values for the xpath query
+     * 
+     * @param doc
+     * @param xpathQuery
+     * @return 
+     */
+    private List<String> getValuesForXPath(Document doc, String xpathQuery) {
+        final XPath xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(new NamespaceContext() {
             @Override
             public String getNamespaceURI(String prefix) {
@@ -359,15 +418,23 @@ public class ReferencesEditor extends Panel implements FieldComposition {
                 return null;
             }
         });
-
-        //XPathExpression expr = xpath.compile("//CMD/Header/MdCreator");
-        XPathExpression expr = xpath.compile("//default:CMD");
-        Object result = expr.evaluate(doc, XPathConstants.NODESET);
-        NodeList nodes = (NodeList) result;
-        logger.info("Nodelist.getLength()="+nodes.getLength());
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node currentItem = nodes.item(i);
-            logger.info("found node -> " + currentItem.getLocalName() + " (namespace: " + currentItem.getNamespaceURI() + ")");
+        
+        List<String> result = new ArrayList<>();
+        
+        try {
+            XPathExpression expr = xpath.compile(xpathQuery);
+            Object xpathResult = expr.evaluate(doc, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) xpathResult;
+            logger.trace("XPatch query = ["+xpathQuery+"], result nodelist.getLength() = "+nodes.getLength());
+            for (int i = 0; i < nodes.getLength(); i++) {
+                Node currentItem = nodes.item(i);
+                logger.trace("found node -> " + currentItem.getLocalName() + " (namespace: " + currentItem.getNamespaceURI() + "), value = " + currentItem.getNodeValue());
+                result.add(currentItem.getNodeValue());
+            }
+        } catch(XPathExpressionException ex) {
+            logger.error("XPath query ["+xpathQuery+"] failed.", ex);
         }
+        
+        return result;
     }
 }

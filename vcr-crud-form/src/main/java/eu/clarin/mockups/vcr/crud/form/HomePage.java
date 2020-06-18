@@ -1,8 +1,6 @@
 package eu.clarin.mockups.vcr.crud.form;
 
-import eu.clarin.mockups.vcr.crud.form.editors.AuthorEditor;
-import eu.clarin.mockups.vcr.crud.form.editors.Field;
-import eu.clarin.mockups.vcr.crud.form.editors.ReferencesEditor;
+import eu.clarin.mockups.vcr.crud.forms.CreateAndEditPanel;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.attributes.AjaxCallListener;
@@ -155,11 +153,33 @@ public class HomePage extends WebPage {
 
         form2.add(tf);
         
-        
-       
-        add(new Field("name", "Name:"));
+        add(new CreateAndEditPanel("create_and_edit_panel"));
+        /*
+        final Component ajax_update_component = this;
+        IModel<String> nameModel = Model.of("");
+        add(new VcrTextField("name", "Name:", "", nameModel));
+        add(new VcrChoiceField("type", "Type:", Arrays.asList(new String[]{"A", "B", "C"})));
         add(new AuthorEditor("authors"));
         add(new ReferencesEditor("references"));
+        add(new AjaxFallbackLink("btn_save") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                System.out.println("Save button clicked");
+                if (target != null) {
+                    target.add(ajax_update_component);
+                }
+            }
+        });
+        add(new AjaxFallbackLink("btn_cancel") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                System.out.println("Cancel button clicked");
+                if (target != null) {
+                    target.add(ajax_update_component);
+                }
+            }
+        });
+        */
     }
 
 }

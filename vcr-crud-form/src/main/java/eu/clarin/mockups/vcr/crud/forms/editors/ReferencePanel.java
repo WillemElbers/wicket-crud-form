@@ -1,6 +1,5 @@
-package eu.clarin.mockups.vcr.crud.form.editors.references;
+package eu.clarin.mockups.vcr.crud.forms.editors;
 
-import eu.clarin.mockups.vcr.crud.form.editors.ReferencesEditor;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -17,7 +16,17 @@ public class ReferencePanel extends Panel {
         add(new Label("value", ref.getReference().getValue()));
         add(new Label("check", ref.getReference().getCheck()));
         add(new Label("type", ref.getReference().getType()));
-        add(new TextField("title", Model.of("")));
-        add(new TextField("description", Model.of("")));
+        
+        Model titleModel = Model.of("");
+        if(ref.getReference().getTitle() != null) {
+            titleModel.setObject(ref.getReference().getTitle());
+        }
+        add(new TextField("title", titleModel));
+        
+        Model descriptionModel = Model.of("");
+        if(ref.getReference().getDescription() != null) {
+            descriptionModel.setObject(ref.getReference().getDescription());
+        }
+        add(new TextField("description", descriptionModel));
     }
 }

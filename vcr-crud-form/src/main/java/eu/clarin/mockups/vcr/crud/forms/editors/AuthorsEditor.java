@@ -1,5 +1,8 @@
-package eu.clarin.mockups.vcr.crud.form.editors;
+package eu.clarin.mockups.vcr.crud.forms.editors;
 
+import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextField;
+import eu.clarin.mockups.vcr.crud.forms.fields.Field;
+import eu.clarin.mockups.vcr.crud.forms.fields.FieldComposition;
 import eu.clarin.mockups.vcr.crud.form.pojo.Author;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,21 +24,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author wilelb
  */
-public class AuthorEditor extends Panel {//implements FieldComposition {
+public class AuthorsEditor extends Panel {
 
-    private final static Logger logger = LoggerFactory.getLogger(AuthorEditor.class);
+    private final static Logger logger = LoggerFactory.getLogger(AuthorsEditor.class);
 
     private final List<Editable<Author>> authors = new ArrayList<>();
 
-    /*
-    private final IModel<String> mdlName = new Model<>();
-    private final IModel<String> mdlEmail = new Model<>();
-    private final IModel<String> mdlAffiliation = new Model<>();
-
-    private Component focusResetComponent;
-
-    private List<Field> fields = new ArrayList<>();
-*/
     public class Editable<T> implements Serializable {
         private final T data;
         
@@ -63,7 +57,6 @@ public class AuthorEditor extends Panel {//implements FieldComposition {
         public AuthorPanel(String id, final Editable<Author> editableAuthor, final Component componentToUpdate) {
             super(id);
             setOutputMarkupId(true);
-            //final Component _this = this;
 
             final Author a = editableAuthor.getData();
             add(new Label("name", a.getName()));
@@ -78,6 +71,10 @@ public class AuthorEditor extends Panel {//implements FieldComposition {
                             authors.get(i).setEditing(true);
                         }
                     }
+                    
+                    noAuthors.setVisible(authors.size() <= 0);
+                    ajaxWrapper.setVisible(authors.size() > 0);
+                    
                     if (target != null) {
                         target.add(componentToUpdate);
                     }
@@ -94,6 +91,10 @@ public class AuthorEditor extends Panel {//implements FieldComposition {
                             authors.remove(i);
                         }
                     }
+                    
+                    noAuthors.setVisible(authors.size() <= 0);
+                    ajaxWrapper.setVisible(authors.size() > 0);
+        
                     if (target != null) {
                         target.add(componentToUpdate);
                     }
@@ -146,13 +147,12 @@ public class AuthorEditor extends Panel {//implements FieldComposition {
                 mdlAffiliation.setObject(a.getAffiliation());
             }
             
-            Field f1 = new Field("author_name", "Name:", null, mdlName, this);
+            Field f1 = new VcrTextField("author_name", "Name:", null, mdlName, this);
             f1.setRequired(true);
-            //this.focusResetComponent = f1.getComponentToTakeFocus();
-            Field f2 = new Field("author_email", "Email:", null, mdlEmail, this);
+            Field f2 = new VcrTextField("author_email", "Email:", null, mdlEmail, this);
             f2.setRequired(true);
-            Field f3 = new Field("author_affiliation", "Affiliation:", null, mdlAffiliation, this);
-            f3.setTriggerComplete(true);
+            Field f3 = new VcrTextField("author_affiliation", "Affiliation:", null, mdlAffiliation, this);
+            f3.setCompleteSubmitOnUpdate(true);            
 
             fields.add(f1);
             fields.add(f2);
@@ -163,17 +163,22 @@ public class AuthorEditor extends Panel {//implements FieldComposition {
             add(f3);
         }
 
-        @Override
-        public boolean completeSubmit(AjaxRequestTarget target) {
-            logger.info("Completing author submit: name=" + mdlName.getObject() + ", email=" + mdlEmail.getObject() + ", affiliation=" + mdlAffiliation.getObject());
-
+        public boolean validate() {
             boolean valid = true;
             for (Field f : fields) {
                 if (!f.validate()) {
                     valid = false;
                 }
             }
+            return valid;
+        }
+        
+        @Override
+        public boolean completeSubmit(AjaxRequestTarget target) {
+            logger.info("Completing author submit: name=" + mdlName.getObject() + ", email=" + mdlEmail.getObject() + ", affiliation=" + mdlAffiliation.getObject());
 
+            boolean valid = validate();          
+            logger.info("Valid = " + valid);
             if (valid) {
                 String name = mdlName.getObject();
                 String email = mdlEmail.getObject();
@@ -193,6 +198,9 @@ public class AuthorEditor extends Panel {//implements FieldComposition {
                 mdlEmail.setObject("");
                 mdlAffiliation.setObject("");
 
+                noAuthors.setVisible(authors.size() <= 0);
+                ajaxWrapper.setVisible(authors.size() > 0);
+        
                 if (target != null) {
                     target.add(componentToUpdate);
                 }
@@ -202,78 +210,51 @@ public class AuthorEditor extends Panel {//implements FieldComposition {
 
     }
     
-    public AuthorEditor(String id) {
+    Label noAuthors;
+    WebMarkupContainer ajaxWrapper;
+    
+    public AuthorsEditor(String id) {
         super(id);
         setOutputMarkupId(true);
 
-        final WebMarkupContainer ajaxWrapper = new WebMarkupContainer("ajaxwrapper");
+        final Component componentToUpdate = this;
+        noAuthors = new Label("lbl_no_authors", "No authors");
+       
+        ajaxWrapper = new WebMarkupContainer("ajaxwrapper");
         ajaxWrapper.setOutputMarkupId(true);
-        
         ListView listview = new ListView("listview", authors) {
             @Override
             protected void populateItem(ListItem item) {
                 Editable<Author> object = (Editable<Author>) item.getModel().getObject();
                 if(object.isEditing()) {
-                    item.add(new AuthorEditPanel("pnl_author_details", object, ajaxWrapper));
+                    item.add(new AuthorEditPanel("pnl_author_details", object, componentToUpdate));
                 } else {
-                    item.add(new AuthorPanel("pnl_author_details", object, ajaxWrapper));
+                    item.add(new AuthorPanel("pnl_author_details", object, componentToUpdate));
                 }
             }
         };
         ajaxWrapper.add(listview);
+        
+        add(noAuthors);
         add(ajaxWrapper);
+        add(new AuthorEditPanel("pnl_create_author", null, componentToUpdate));
         
-        add(new AuthorEditPanel("pnl_create_author", null, ajaxWrapper));
-        
-        /*
-        Field f1 = new Field("author_name", "Name:", null, mdlName, this);
-        f1.setRequired(true);
-        this.focusResetComponent = f1.getComponentToTakeFocus();
-        Field f2 = new Field("author_email", "Email:", null, mdlEmail, this);
-        f2.setRequired(true);
-        Field f3 = new Field("author_affiliation", "Affiliation:", null, mdlAffiliation, this);
-        f3.setTriggerComplete(true);
-
-        fields.add(f1);
-        fields.add(f2);
-        fields.add(f3);
-
-        add(f1);
-        add(f2);
-        add(f3);
-*/
+        noAuthors.setVisible(authors.size() <= 0);
+        ajaxWrapper.setVisible(authors.size() > 0);
     }
-/*
-    @Override
-    public boolean completeSubmit(AjaxRequestTarget target) {
-        logger.info("Completing author submit: name=" + mdlName.getObject() + ", email=" + mdlEmail.getObject() + ", affiliation=" + mdlAffiliation.getObject());
 
-        boolean valid = true;
-        for (Field f : fields) {
-            if (!f.validate()) {
-                valid = false;
-            }
+    /**
+     * @return the authors
+     */
+    public List<Author> getData() {
+        List<Author> result = new ArrayList<>();
+        for(Editable<Author> ea : authors) {
+            result.add(ea.getData());
         }
-
-        if (valid) {
-            String name = mdlName.getObject();
-            String email = mdlEmail.getObject();
-            String affiliation = mdlAffiliation.getObject() == null ? null : mdlAffiliation.getObject();
-
-            authors.add(new Editable(new Author(name, email, affiliation)));
-
-            mdlName.setObject("");
-            mdlEmail.setObject("");
-            mdlAffiliation.setObject("");
-
-            if (target != null) {
-                target.add(this);
-                if (this.focusResetComponent != null) {
-                    target.focusComponent(this.focusResetComponent);
-                }
-            }
-        }
-        return false;
+        return result;
     }
-*/
+    
+    public void reset() {
+        authors.clear();
+    }
 }

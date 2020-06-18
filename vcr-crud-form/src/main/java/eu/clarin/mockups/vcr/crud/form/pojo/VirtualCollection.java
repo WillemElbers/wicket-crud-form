@@ -1,7 +1,7 @@
 
 package eu.clarin.mockups.vcr.crud.form.pojo;
 
-import eu.clarin.mockups.vcr.crud.form.pojo.reference.Reference;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +9,10 @@ import java.util.List;
  *
  * @author wilelb
  */
-public class VirtualCollection {
+public class VirtualCollection implements Serializable {
     private String name;
+    private String type;
+    private List<Author> authors = new ArrayList<>();
     private List<Reference> references = new ArrayList<>();
 
     /**
@@ -39,5 +41,33 @@ public class VirtualCollection {
      */
     public void setReferences(List<Reference> references) {
         this.references = references;
+    }
+
+    /**
+     * @return the type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * @param type the type to set
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * @return the authors
+     */
+    public List<Author> getAuthors() {
+        return authors;
+    }
+
+    /**
+     * @param authors the authors to set
+     */
+    public void setAuthors(List<Author> authors) {
+        this.authors = authors;
     }
 }

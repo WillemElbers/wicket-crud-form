@@ -1,4 +1,4 @@
-package eu.clarin.mockups.vcr.crud.form.editors;
+package eu.clarin.mockups.vcr.crud.forms.fields;
 
 /**
  *
