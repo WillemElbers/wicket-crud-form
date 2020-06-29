@@ -1,32 +1,78 @@
 package eu.clarin.mockups.vcr.crud.forms.editors;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  *
  * @author wilelb
  */
 public class ReferencePanel extends Panel {
-    public ReferencePanel(String id, ReferencesEditor.ReferenceJob ref) {
+    private static Logger logger = LoggerFactory.getLogger(ReferencePanel.class);
+    
+    private transient List<EventHandler> eventHandlers = new ArrayList<>();
+    
+    /**
+     * 
+     * @param id    The wicket component id
+     * @param ref 
+     * @param decorator Decorate this component with specific css classes
+     */
+    public ReferencePanel(String id, final ReferencesEditor.ReferenceJob ref, Decorator decorator) {
         super(id);
-        add(new Label("state", ref.getState()));
-        add(new Label("value", ref.getReference().getValue()));
-        add(new Label("check", ref.getReference().getCheck()));
-        add(new Label("type", ref.getReference().getType()));
+        decorator.decorate(this);
         
         Model titleModel = Model.of("");
         if(ref.getReference().getTitle() != null) {
             titleModel.setObject(ref.getReference().getTitle());
         }
-        add(new TextField("title", titleModel));
-        
         Model descriptionModel = Model.of("");
         if(ref.getReference().getDescription() != null) {
             descriptionModel.setObject(ref.getReference().getDescription());
         }
-        add(new TextField("description", descriptionModel));
+        
+        WebMarkupContainer editorWrapper = new WebMarkupContainer("wrapper");
+        
+        editorWrapper.add(new Label("state", ref.getState()));
+        editorWrapper.add(new Label("value", ref.getReference().getValue()));
+        editorWrapper.add(new Label("check", ref.getReference().getCheck()));
+        editorWrapper.add(new Label("type", ref.getReference().getType()));
+        editorWrapper.add(new Label("title", titleModel));
+        editorWrapper.add(new Label("description", descriptionModel));
+        AjaxFallbackLink btnEdit = new AjaxFallbackLink("btn_edit") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                for(EventHandler handler : eventHandlers) {
+                    handler.handleEditEvent(ref.getReference(), target);
+                }
+            }
+        };
+        btnEdit.setEnabled(ref.getState() == ReferencesEditor.State.DONE);
+        editorWrapper.add(btnEdit);
+        
+        AjaxFallbackLink btnRemove = new AjaxFallbackLink("btn_remove") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                for(EventHandler handler : eventHandlers) {
+                    handler.handleRemoveEvent(ref.getReference(), target);
+                }
+            }
+        };
+        btnRemove.setEnabled(ref.getState() == ReferencesEditor.State.DONE);
+        editorWrapper.add(btnRemove);
+        
+        add(editorWrapper);
+    }
+    
+    public void addEventHandler(EventHandler handler) {
+        this.eventHandlers.add(handler);
     }
 }

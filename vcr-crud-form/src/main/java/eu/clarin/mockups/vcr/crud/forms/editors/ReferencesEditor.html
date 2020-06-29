@@ -5,19 +5,27 @@
     <body>
         
         <wicket:panel>  
-            <!-- The list of references -->
-            <div>References:</div>
-            <div wicket:id="ajaxwrapper">
-                <div wicket:id="lbl_no_references"></div>
-                <div wicket:id="listview">
-                    <div wicket:id="pnl_reference">label</div>
-                </div>
-            </div>
+            
             <!-- Editor to add new reference -->
             <div>Add new reference:</div>
              <div style="padding-left: 5px; padding-right: 5px;">
                 <div wicket:id="reference">[NAME]</div>
             </div>
+            
+            <!-- Editor to improve a reference -->
+            <div wicket:id="ref_editor_wrapper">
+                <div wicket:id="ref_editor"></div>
+            </div>
+             
+            <!-- The list of references -->
+            <div wicket:id="ajaxwrapper">            
+                 <div>References:</div>
+                <div wicket:id="lbl_no_references"></div>
+                <div wicket:id="listview">
+                    <div wicket:id="pnl_reference">label</div>
+                </div>
+            </div>
+            
         </wicket:panel>       
         
     </body>

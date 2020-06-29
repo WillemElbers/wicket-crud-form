@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org/">
+    <head><title></title></head>
+    <body>
+        
+        <wicket:panel>            
+            <div>
+            Name: <span wicket:id="title"></span><br />
+            Type: <span wicket:id="type"></span><br />
+            Authors:
+                <div wicket:id="authors_list">
+                    <div wicket:id="wrapper1"> 
+                        <span wicket:id="name">name</span> /
+                        <span wicket:id="email">email</span> / 
+                        <span wicket:id="affiliation">affiliation</span>
+                    </div>
+                </div>
+            References:
+                <div wicket:id="references_list">
+                    <div wicket:id="wrapper2"> 
+                        <a wicket:id="ref_link"><span wicket:id="title">title</span></a> /
+                        <span wicket:id="description">description</span>
+                    </div>
+                </div>
+            <br />
+            </div>
+        </wicket:panel>
+        
+    </body>
+</html>

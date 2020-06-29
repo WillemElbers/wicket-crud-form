@@ -1,46 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org/">
-    <head><title></title></head>
+    <head>
+        <title>CRUD form demonstrator</title>
+        <style>
+            .odd {
+                background-color: white;
+            }
+            
+            .even {
+                background-color: white;
+            }
+            
+            .reference {
+                border: 1px solid #000000;
+                margin: 5px 5px 5px 25px;
+                padding: 5px;
+            }
+        </style>
+    </head>
     <body>
-        <div>
-            <span wicket:id="message">Message goes here</span>
-            
-            <br /><br />
-            <hr />
-            <h3>Form based</h3>            
-            
-            <form wicket:id="form1">
-                <div>
-                    <span wicket:id="lbl_name">Name:</span>
-                    <input wicket:id="input_name" type="text"/>
-                </div>
-
-                <form wicket:id="form2">
-                    <div>
-                        <div>
-                            <span wicket:id="lbl_reference">Add </span>
-                            <input wicket:id="input_reference" type="text"/>
-                        </div>
-                        <button wicket:id="submit2"></button>
-                    </div>
-                </form>
-
-                <div>
-                    <button wicket:id="submit1"></button>    
-                    <a wicket:id="cancel1">Cancel</a>    
-                </div>
-            </form>
-            
-            <br /><br />
-            <hr />
-            <h3>Ajax only</h3>
-            Reference examples:
+        
+        <div>            
+            <h3>Goals</h3>
+            Technical demonstrator to show and test a 100% AJAX driven CRUD panel
+            for virtual collections.<br />The focus is on functionality rather than 
+            layout. The CRUD panel contains two 1 to n editors: <br />
+            (1) authors (inline editor) and (2) references (editor with background
+            process).<br />References are analyzed in the background after adding.
+            If possible type information and basic metadata is extracted.
+            <h3>Open issues</h3>
             <ul>
-                <li><a href="https://hdl.handle.net/1839/00-0000-0000-001B-A8E7-B">https://hdl.handle.net/1839/00-0000-0000-001B-A8E7-B</a></li>
+                <li>Improve reference editor so that it works inline.</li>
+                <li>Improve validation, including disabling final save button while
+                the collection is invalid   </li>
+                <li>Improve submission of inline editor. This currently is triggered
+                    by the last field. This should be made to submit when the whole 
+                    inline editor lost focus. Example when filling in an author and
+                    tabbing "back" from the last (affiliation) field triggers a 
+                    submit</li>
+                <li>Improve layout and responsiveness</li>                    
             </ul>
-            Form:
+            <h3>Reference examples</h3>
+            (Copy+paste into the "add new reference - reference" box):
+            <ul>
+                <li><a href="http://www.google.nl">http://www.google.nl</a> Standard url</li>
+                <li><a href="https://hdl.handle.net/1839/00-0000-0000-001B-A8E7-B">https://hdl.handle.net/1839/00-0000-0000-001B-A8E7-B</a> (Example of properly detected CMDI file)</li>
+            </ul>
+            
+            <br /><hr /><br />
+            
+            <h3>Form</h3>
             <div wicket:id="create_and_edit_panel">[CREATE AND EDIT PANEL]</div>
         </div>
+        
     </body>
 </html>

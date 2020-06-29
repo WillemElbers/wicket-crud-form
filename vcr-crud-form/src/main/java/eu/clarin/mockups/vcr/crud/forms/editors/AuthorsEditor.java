@@ -1,4 +1,4 @@
-package eu.clarin.mockups.vcr.crud.forms.editors;
+ package eu.clarin.mockups.vcr.crud.forms.editors;
 
 import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextField;
 import eu.clarin.mockups.vcr.crud.forms.fields.Field;

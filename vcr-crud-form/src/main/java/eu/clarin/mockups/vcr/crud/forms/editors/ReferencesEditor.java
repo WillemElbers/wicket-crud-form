@@ -32,7 +32,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -42,6 +41,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +64,10 @@ public class ReferencesEditor extends Panel implements FieldComposition {
     final ListView listview;
     
     private transient Worker worker = new Worker();
+    
+    private int edit_index = -1;
+    
+    private final ReferenceEditor editor;
     
     public class Validator implements InputValidator, Serializable {
         private String message = "";
@@ -90,20 +94,80 @@ public class ReferencesEditor extends Panel implements FieldComposition {
         super(id);
         setOutputMarkupId(true);
 
+        final WebMarkupContainer editorWrapper = new WebMarkupContainer("ref_editor_wrapper");
+        editorWrapper.setOutputMarkupId(true);
+        
+        editor = new ReferenceEditor("ref_editor", this, new SaveEventHandler() {
+            @Override
+            public void handleSaveEvent() {
+                edit_index = -1;
+                editor.setVisible(false);
+            }
+        }, new CancelEventHandler() {
+            @Override
+            public void handleCancelEvent() {
+                edit_index = -1;
+                editor.setVisible(false);
+            }
+        });
+        editor.setVisible(false);
+        editorWrapper.add(editor);
+        add(editorWrapper);
         
         final WebMarkupContainer ajaxWrapper = new WebMarkupContainer("ajaxwrapper");
         ajaxWrapper.setOutputMarkupId(true);
         
         lblNoReferences = new Label("lbl_no_references", "No references found.");
         
-        final List<Component> comps = new ArrayList<>();
+        final StripeDecorator stripeDecorator = new StripeDecorator();
         listview = new ListView("listview", references) {
             @Override
             protected void populateItem(ListItem item) {
                 ReferenceJob ref = (ReferenceJob)item.getModel().getObject();
-                Component c = new ReferencePanel("pnl_reference", ref);
-                c.setOutputMarkupId(true);
-                comps.add(c);
+                ReferencePanel c = new ReferencePanel("pnl_reference", ref, stripeDecorator);
+                c.addEventHandler(new EventHandler<Reference>() {
+                    @Override
+                    public void handleEditEvent(Reference t, AjaxRequestTarget target) {
+                        logger.info("Edit reference: {}", t.getValue());
+                        edit_index = -1;
+                        for(int i = 0; i < references.size(); i++) {
+                            String value = references.get(i).getReference().getValue();
+                            if(value.equalsIgnoreCase(t.getValue())) {
+                                edit_index = i;
+                                break;
+                            }
+                        }
+                        
+                        if(edit_index < 0) {
+                            editor.setVisible(false);
+                            editor.reset();
+                        } else {
+                            editor.setReference(references.get(edit_index).getReference());
+                            /*
+                            editor.setReferenceModels(
+                                    references.get(edit_index).getReference(), 
+                                    new PropertyModel<String>(references.get(edit_index).getReference(), "title"), 
+                                    new PropertyModel<String>(references.get(edit_index).getReference(), "description"));
+                            */
+                            editor.setVisible(true);
+                        }
+                        target.add(editorWrapper);
+                    }
+
+                    @Override
+                    public void handleRemoveEvent(Reference t, AjaxRequestTarget target) {
+                        logger.info("Removing reference: {}", t.getValue());
+                        for(int i = 0; i < references.size(); i++) {
+                            String value = references.get(i).getReference().getValue();
+                            if(value.equalsIgnoreCase(t.getValue())) {
+                                references.remove(i);
+                                target.add(ajaxWrapper);
+                                target.add(editorWrapper);
+                                break;
+                            }
+                        }
+                    }
+                }); 
                 item.add(c);
             }
         };
@@ -112,10 +176,7 @@ public class ReferencesEditor extends Panel implements FieldComposition {
             @Override
             protected void onTimer(AjaxRequestTarget target) {
                 if(target != null) {
-                    //target.add(ajaxWrapper);
-                    for(Component c : comps) {
-                        target.add(c);
-                    }
+                    target.add(ajaxWrapper);                
                 }
             }
         });
@@ -190,6 +251,12 @@ public class ReferencesEditor extends Panel implements FieldComposition {
         return false;
     }
     
+    public void reset() {
+        editor.setVisible(false);
+        editor.reset();
+        references.clear();
+    }
+    
     public enum State {
         INITIALIZED, ANALYZING, DONE, FAILED
     }
@@ -200,10 +267,6 @@ public class ReferencesEditor extends Panel implements FieldComposition {
             result.add(job.getReference());
         }
         return result;
-    }
-    
-    public void reset() {
-        references.clear();
     }
     
     public class ReferenceJob implements Serializable {

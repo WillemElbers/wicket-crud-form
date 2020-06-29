@@ -7,10 +7,17 @@ import eu.clarin.mockups.vcr.crud.forms.editors.ReferencesEditor;
 import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextField;
 import eu.clarin.mockups.vcr.crud.forms.fields.VcrChoiceField;
 import eu.clarin.mockups.vcr.crud.form.pojo.VirtualCollection;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.ExternalLink;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -35,6 +42,48 @@ public class CreateAndEditPanel extends Panel {
     private final AuthorsEditor authorsEditor;
     private final ReferencesEditor referencesEditor;
         
+    private final List<VirtualCollection> collections = new ArrayList<>();
+    
+    public class CollectionPanel extends Panel {
+        public CollectionPanel(String id, VirtualCollection collection) {
+            super(id);
+            
+            add(new Label("title", collection.getName()));
+            add(new Label("type", collection.getType()));
+            
+             
+
+            ListView authorsListview = new ListView("authors_list", collection.getAuthors()) {
+                @Override
+                protected void populateItem(ListItem item) {
+                    Author a = (Author)item.getModel().getObject();
+                    WebMarkupContainer wrapper = new WebMarkupContainer("wrapper1");
+                    wrapper.add(new Label("name", a.getName()));
+                    wrapper.add(new Label("email", a.getEmail()));
+                    wrapper.add(new Label("affiliation", a.getAffiliation()));                
+                    item.add(wrapper);
+                }
+            };
+
+            add(authorsListview);
+         
+             ListView referencesListview = new ListView("references_list", collection.getReferences()) {
+                @Override
+                protected void populateItem(ListItem item) {
+                    Reference r = (Reference)item.getModel().getObject();
+                    WebMarkupContainer wrapper = new WebMarkupContainer("wrapper2");
+                    ExternalLink link = new ExternalLink("ref_link", r.getValue());
+                    link.add(new Label("title", r.getTitle()));
+                    wrapper.add(link);
+                    wrapper.add(new Label("description", r.getDescription()));
+                    item.add(wrapper);
+                }
+            };
+
+            add(referencesListview);
+        }
+    }
+    
     /**
      * Create a new virtual collection
      * @param id 
@@ -88,6 +137,18 @@ public class CreateAndEditPanel extends Panel {
                 }
             }
         });
+        
+        
+        WebMarkupContainer ajaxWrapper = new WebMarkupContainer("ajaxwrapper");
+        ajaxWrapper.setOutputMarkupId(true);
+        ListView listview = new ListView("listview", collections) {
+            @Override
+            protected void populateItem(ListItem item) {
+                item.add(new CollectionPanel("pnl_collection", (VirtualCollection)item.getModel().getObject()));
+            }
+        };
+        ajaxWrapper.add(listview);
+        add(ajaxWrapper);
     }
     
     private boolean validate() {
@@ -96,15 +157,12 @@ public class CreateAndEditPanel extends Panel {
     
     private void persist() {
         logger.info("Save button clicked");
-        logger.info("Name: {}", nameModel.getObject());
-        logger.info("Type: {}", typeModel.getObject());
-        logger.info("Authors:");
-        for(Author a : authorsEditor.getData()) {
-            logger.info("\t{}, {}, {}", a.getName(), a.getEmail(), a.getAffiliation());
-        }
-        for(Reference r : referencesEditor.getData()) {
-            logger.info("\t{}, {}, {}, {}", r.getUrl(), r.getType(), r.getTitle(), r.getDescription());
-        }
+        VirtualCollection newCollection = new VirtualCollection();
+        newCollection.setName(nameModel.getObject());
+        newCollection.setType(typeModel.getObject());
+        newCollection.setAuthors(authorsEditor.getData());
+        newCollection.setReferences(referencesEditor.getData());
+        collections.add(newCollection);
     }
     
     private void reset() {
