@@ -1,5 +1,7 @@
-package eu.clarin.mockups.vcr.crud.forms.editors;
+package eu.clarin.mockups.vcr.crud.forms.editors.references;
 
+import eu.clarin.mockups.vcr.crud.forms.editors.Decorator;
+import eu.clarin.mockups.vcr.crud.forms.editors.EventHandler;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -24,12 +26,10 @@ public class ReferencePanel extends Panel {
      * 
      * @param id    The wicket component id
      * @param ref 
-     * @param decorator Decorate this component with specific css classes
      */
-    public ReferencePanel(String id, final ReferencesEditor.ReferenceJob ref, Decorator decorator) {
+    public ReferencePanel(String id, final ReferencesEditor.ReferenceJob ref) {
         super(id);
-        decorator.decorate(this);
-        
+
         Model titleModel = Model.of("");
         if(ref.getReference().getTitle() != null) {
             titleModel.setObject(ref.getReference().getTitle());

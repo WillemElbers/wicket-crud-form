@@ -1,6 +1,9 @@
-package eu.clarin.mockups.vcr.crud.forms.editors;
+package eu.clarin.mockups.vcr.crud.forms.editors.references;
 
 import eu.clarin.mockups.vcr.crud.form.pojo.Reference;
+import eu.clarin.mockups.vcr.crud.forms.editors.CancelEventHandler;
+import eu.clarin.mockups.vcr.crud.forms.editors.EventHandler;
+import eu.clarin.mockups.vcr.crud.forms.editors.SaveEventHandler;
 import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextField;
 import eu.clarin.mockups.vcr.crud.forms.fields.Field;
 import eu.clarin.mockups.vcr.crud.forms.fields.FieldComposition;
@@ -41,7 +44,6 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +70,14 @@ public class ReferencesEditor extends Panel implements FieldComposition {
     private int edit_index = -1;
     
     private final ReferenceEditor editor;
+
+    @Override
+    public void increaseFocusCount() {
+    }
+
+    @Override
+    public void decreaseFocusCount() {
+    }
     
     public class Validator implements InputValidator, Serializable {
         private String message = "";
@@ -119,12 +129,11 @@ public class ReferencesEditor extends Panel implements FieldComposition {
         
         lblNoReferences = new Label("lbl_no_references", "No references found.");
         
-        final StripeDecorator stripeDecorator = new StripeDecorator();
         listview = new ListView("listview", references) {
             @Override
             protected void populateItem(ListItem item) {
                 ReferenceJob ref = (ReferenceJob)item.getModel().getObject();
-                ReferencePanel c = new ReferencePanel("pnl_reference", ref, stripeDecorator);
+                ReferencePanel c = new ReferencePanel("pnl_reference", ref);
                 c.addEventHandler(new EventHandler<Reference>() {
                     @Override
                     public void handleEditEvent(Reference t, AjaxRequestTarget target) {
@@ -267,6 +276,12 @@ public class ReferencesEditor extends Panel implements FieldComposition {
             result.add(job.getReference());
         }
         return result;
+    }
+    
+    public void setData(List<Reference> data) {
+        for(Reference r : data) {
+            this.references.add(new ReferenceJob(r));
+        }
     }
     
     public class ReferenceJob implements Serializable {

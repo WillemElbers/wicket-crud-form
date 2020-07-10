@@ -1,4 +1,4 @@
- package eu.clarin.mockups.vcr.crud.forms.editors;
+ package eu.clarin.mockups.vcr.crud.forms.editors.authors;
 
 import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextField;
 import eu.clarin.mockups.vcr.crud.forms.fields.Field;
@@ -116,6 +116,8 @@ public class AuthorsEditor extends Panel {
         private final Editable<Author> editableAuthor;
         private final Component componentToUpdate;
         
+        private int focusCount = 0;
+        
         /**
          * Editor to create a new author
          * 
@@ -175,37 +177,61 @@ public class AuthorsEditor extends Panel {
         
         @Override
         public boolean completeSubmit(AjaxRequestTarget target) {
-            logger.info("Completing author submit: name=" + mdlName.getObject() + ", email=" + mdlEmail.getObject() + ", affiliation=" + mdlAffiliation.getObject());
+            logger.info("completeSubmit :: focuscount = {}", this.focusCount);
+            if(focusCount > 0) {
+                //One component of this composition still has focus, dont submit
+                logger.info("focusCount > 0, in composition focus, no submit");
+            } else if (focusCount < 0) {
+                //Should not happen, log to detect any issues
+                logger.info("focusCount < 0, this is an invalid composition focus state");
+            } else {
+                //focusCount = 0, so all components in the composition lost focus. Submit now.
+                logger.info("Completing author submit: name=" + mdlName.getObject() + ", email=" + mdlEmail.getObject() + ", affiliation=" + mdlAffiliation.getObject());
 
-            boolean valid = validate();          
-            logger.info("Valid = " + valid);
-            if (valid) {
-                String name = mdlName.getObject();
-                String email = mdlEmail.getObject();
-                String affiliation = mdlAffiliation.getObject() == null ? null : mdlAffiliation.getObject();
+                boolean valid = validate();          
+                logger.info("Valid = " + valid);
+                if (valid) {
+                    String name = mdlName.getObject();
+                    String email = mdlEmail.getObject();
+                    String affiliation = mdlAffiliation.getObject() == null ? null : mdlAffiliation.getObject();
 
-                //Create or edit
-                if(editableAuthor == null) {
-                    authors.add(new Editable(new Author(name, email, affiliation)));
-                } else {
-                    editableAuthor.getData().setName(name);
-                    editableAuthor.getData().setEmail(email);
-                    editableAuthor.getData().setAffiliation(affiliation);
-                    editableAuthor.setEditing(false);
-                }
-                
-                mdlName.setObject("");
-                mdlEmail.setObject("");
-                mdlAffiliation.setObject("");
+                    //Create or edit
+                    if(editableAuthor == null) {
+                        authors.add(new Editable(new Author(name, email, affiliation)));
+                    } else {
+                        editableAuthor.getData().setName(name);
+                        editableAuthor.getData().setEmail(email);
+                        editableAuthor.getData().setAffiliation(affiliation);
+                        editableAuthor.setEditing(false);
+                    }
 
-                noAuthors.setVisible(authors.size() <= 0);
-                ajaxWrapper.setVisible(authors.size() > 0);
-        
-                if (target != null) {
-                    target.add(componentToUpdate);
+                    mdlName.setObject("");
+                    mdlEmail.setObject("");
+                    mdlAffiliation.setObject("");
+
+                    noAuthors.setVisible(authors.size() <= 0);
+                    ajaxWrapper.setVisible(authors.size() > 0);
+
+                    if (target != null) {
+                        target.add(componentToUpdate);
+                    }
+                    
+                    this.focusCount = 0;
                 }
             }
             return false;
+        }
+
+        @Override
+        public void increaseFocusCount() {
+            //this.focusCount++;
+            //logger.info("increaseFocusCount :: focuscount = {}", this.focusCount);
+        }
+
+        @Override
+        public void decreaseFocusCount() {
+            //this.focusCount--;
+            //logger.info("decreaseFocusCount :: focuscount = {}", this.focusCount);
         }
 
     }
@@ -252,6 +278,15 @@ public class AuthorsEditor extends Panel {
             result.add(ea.getData());
         }
         return result;
+    }
+    
+     /**
+     * @param authors     
+     */
+    public void setData(List<Author> authors) {
+        for(Author a : authors) {
+            this.authors.add(new Editable<>(a));
+        }
     }
     
     public void reset() {

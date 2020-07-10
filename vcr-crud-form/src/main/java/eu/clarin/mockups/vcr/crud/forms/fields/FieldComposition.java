@@ -8,4 +8,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
  */
 public interface FieldComposition {
     public boolean completeSubmit(AjaxRequestTarget target);
+    public void increaseFocusCount();
+    public void decreaseFocusCount();
 }

@@ -1,7 +1,7 @@
 package eu.clarin.mockups.vcr.crud.forms.fields;
 
 import eu.clarin.mockups.vcr.crud.forms.editors.AjaxFormComponentOnKeySubmitBehavior;
-import eu.clarin.mockups.vcr.crud.forms.editors.ReferencesEditor;
+import eu.clarin.mockups.vcr.crud.forms.editors.references.ReferencesEditor;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.wicket.Component;
@@ -76,18 +76,46 @@ public abstract class Field extends Panel {
     }
     
     protected void addUpdatingBehavior(Component c, final FieldComposition parent, final Component t) {
-        c.add(getOnBlurUpdatingBehavior(c, parent, t));
-        c.add(getOnKeySubmitBehavior(c, parent, t));
+        c.add(getOnFocusUpdatingBehavior(parent));
+        c.add(getOnBlurUpdatingBehavior(parent, t));
+        c.add(getOnKeySubmitBehavior(parent, t));
     }
     
-    protected AjaxFormComponentUpdatingBehavior getOnBlurUpdatingBehavior(Component c, final FieldComposition parent, final Component t) {
-        return new AjaxFormComponentUpdatingBehavior("blur") {
+    protected AjaxFormComponentUpdatingBehavior getOnFocusUpdatingBehavior(final FieldComposition parent) {
+        return new AjaxFormComponentUpdatingBehavior("focus") {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
+                if(parent != null) {
+                    parent.increaseFocusCount();
+                }
+            }
+        };
+    }
+    
+    protected AjaxFormComponentUpdatingBehavior getOnBlurUpdatingBehavior(final FieldComposition parent, final Component t) {
+        return new AjaxFormComponentUpdatingBehavior("blur") {
+            @Override
+            protected void onUpdate(final AjaxRequestTarget target) {
                 logger.trace("onUpdate: triggered via onBlur");
                 if(validate()) {
                     handleUpdateData(target, dataModel, nextComponentToFocus);                    
                     if(parent != null && completeSubmitOnUpdate) {
+                        /*
+                        Thread t = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                 try {
+                                    Thread.sleep(500);
+                                } catch(Exception ex) {
+
+                                }
+                                parent.decreaseFocusCount();
+                                parent.completeSubmit(target);
+                            }
+                        }, "blur");
+                        t.start();
+                       */
+                        parent.decreaseFocusCount();
                         parent.completeSubmit(target);
                     }
                 }
@@ -97,7 +125,7 @@ public abstract class Field extends Panel {
         };
     }
     
-    protected AjaxFormComponentOnKeySubmitBehavior getOnKeySubmitBehavior(Component c, final FieldComposition parent, final Component t) {
+    protected AjaxFormComponentOnKeySubmitBehavior getOnKeySubmitBehavior(final FieldComposition parent, final Component t) {
         return new AjaxFormComponentOnKeySubmitBehavior() {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {               

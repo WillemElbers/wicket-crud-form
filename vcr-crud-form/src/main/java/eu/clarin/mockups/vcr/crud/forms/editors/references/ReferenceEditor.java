@@ -1,6 +1,8 @@
-package eu.clarin.mockups.vcr.crud.forms.editors;
+package eu.clarin.mockups.vcr.crud.forms.editors.references;
 
 import eu.clarin.mockups.vcr.crud.form.pojo.Reference;
+import eu.clarin.mockups.vcr.crud.forms.editors.CancelEventHandler;
+import eu.clarin.mockups.vcr.crud.forms.editors.SaveEventHandler;
 import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextArea;
 import eu.clarin.mockups.vcr.crud.forms.fields.VcrTextField;
 import org.apache.wicket.Component;

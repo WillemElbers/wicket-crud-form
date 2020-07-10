@@ -25,17 +25,10 @@ public class VcrChoiceField extends Field {
         
     public VcrChoiceField(String id, String label, List<String> choices, String defaultValue, final IModel dataModel, final FieldComposition parent) {
         super(id, label, defaultValue, dataModel, parent, new RadioChoice<>("input_radio_choice", dataModel, choices));
-        //RadioChoice<String> choice = new RadioChoice<>("input_radio_choice", dataModel, choices);
-/*
-        addUpdatingBehavior(choice, parent, this);
-        add(choice);
-            
-        componentToTakeFocus = choice;
-        */
     }
         
     @Override
-    protected AjaxFormComponentUpdatingBehavior getOnBlurUpdatingBehavior(Component c, final FieldComposition parent, final Component t) {
+    protected AjaxFormComponentUpdatingBehavior getOnBlurUpdatingBehavior(final FieldComposition parent, final Component t) {
         return new AjaxFormChoiceComponentUpdatingBehavior() {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
@@ -46,10 +39,8 @@ public class VcrChoiceField extends Field {
                         parent.completeSubmit(target);
                     }
                 }
-
                 target.add(t);
             }
         };
     }
-    
 }

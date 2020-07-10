@@ -21,6 +21,7 @@
     </head>
     <body>
         
+        <!-- Introduction -->
         <div>            
             <h3>Goals</h3>
             Technical demonstrator to show and test a 100% AJAX driven CRUD panel
@@ -31,17 +32,34 @@
             If possible type information and basic metadata is extracted.
             <h3>Open issues</h3>
             <ul>
-                <li>Improve reference editor so that it works inline (if possible).</li>
-                <li>Improve validation, including disabling final save button while
-                the collection is invalid   </li>
+                <li>
+                    Improve reference editor so that it works inline (if possible), 
+                    <a href="https://github.com/clarin-eric/VirtualCollectionRegistry/issues/85">GitHub issue</a>.
+                </li>
+                <li>
+                    Improve validation, including disabling final save button while
+                    the collection is invalid, 
+                    <a href="https://github.com/clarin-eric/VirtualCollectionRegistry/issues/86">GitHub issue</a>.
+                </li>
                 <li>Improve submission of inline editor. This currently is triggered
                     by the last field. This should be made to submit when the whole 
-                    inline editor lost focus. Example when filling in an author and
+                    inline editor lost focus. Example when filling in an author and+
                     tabbing "back" from the last (affiliation) field triggers a 
-                    submit</li>
-                <li>Improve layout and responsiveness</li>
-                <li>Support editing of complete collections</li>
-                <li>Add confirmation before cancel or remove</li>
+                    submit, 
+                    <a href="https://github.com/clarin-eric/VirtualCollectionRegistry/issues/90">GitHub issue</a>.
+                </li>
+                <li>
+                    Improve layout and responsiveness,
+                    <a href="https://github.com/clarin-eric/VirtualCollectionRegistry/issues/87">GitHub issue</a>
+                </li>
+                <li>
+                    Support editing of complete collections,
+                    <a href="https://github.com/clarin-eric/VirtualCollectionRegistry/issues/88">GitHub issue</a>
+                </li>
+                <li>
+                    Add confirmation before cancel or remove, 
+                    <a href="https://github.com/clarin-eric/VirtualCollectionRegistry/issues/89">GitHub issue</a>
+                </li>
             </ul>
             <h3>Reference examples</h3>
             (Copy+paste into the "add new reference - reference" box):
@@ -52,8 +70,17 @@
             
             <br /><hr /><br />
             
+            <!-- Ajax form -->
             <h3>Form</h3>
             <div wicket:id="create_and_edit_panel">[CREATE AND EDIT PANEL]</div>
+            
+            <!-- results -->
+            <h3>Collections:</h3>
+            <div wicket:id="ajaxwrapper">
+                <div wicket:id="listview">
+                    <div wicket:id="pnl_collection">label</div>
+                </div>
+            </div>
         </div>
         
     </body>

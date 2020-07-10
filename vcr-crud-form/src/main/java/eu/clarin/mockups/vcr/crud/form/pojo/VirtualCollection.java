@@ -10,11 +10,25 @@ import java.util.List;
  * @author wilelb
  */
 public class VirtualCollection implements Serializable {
+    
+    private String id;
     private String name;
     private String type;
     private List<Author> authors = new ArrayList<>();
     private List<Reference> references = new ArrayList<>();
 
+    public VirtualCollection() {
+        //this.id = UUID.randomUUID().toString();
+    }
+    
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    public String getId() {
+        return this.id;
+    }
+    
     /**
      * @return the name
      */
